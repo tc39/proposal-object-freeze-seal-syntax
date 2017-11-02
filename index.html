@@ -1,0 +1,455 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Object.freeze and Object.seal syntax</title>
+
+		<link rel="stylesheet" type="text/css" href="css/reveal.css">
+		<link rel="stylesheet" type="text/css" href="css/theme/solarized.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" type="application/javascript" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+        <section>
+          <h1>Let's talk about Immutable data structures</h1>
+          <aside class="notes">Introduce yourself</aside>
+        </section>
+        
+        <section>
+          <h2>Object.freeze/Object.seal</h2>
+          <h3 class="fragment">They work</h3>
+          <h3 class="fragment">They're reliable</h3>
+          <h3 class="fragment">We can all go home then. Talk over</h3>
+        </section>
+
+        <section>
+          <h1>but wait...</h1>
+        </section>
+
+        <section>
+          <span class="image"><img alt="Search results from GitHub showing Object.freeze has 375,718 uses" src="./fig1.png"/></span>
+          <span class="image"><img alt="Search results from GitHub showing Object.seal has 146,529 uses" src="./fig2.png"/></span> 
+          <aside class="notes">
+            Searching for Object.freeze on GithHub.com yields 400,000 results, Object.seal 150,000. So people use these tools...
+          </aside>
+        </section>
+
+        <section>
+          <span class="image"><img alt="The npm package page for immutable.js, showing over 4,029,372 downloads per month" src="./fig3.png"/></span> 
+          <span class="image"><img alt="The GitHub dependency graph for immutable.js, showing 35,744 dependants, and 21,170 stars" src="./fig4.png"/></span> 
+          <aside class="notes">
+            But people also use other toos. Immutable.js gets 4 million downloads a month. It's the 75th most depended on package on npm.
+            It has 40,000 dependants. Immutable.js offers a lot more over Object.seal and Object.freeze; but the point is people care about immutable data structures.
+          </aside>
+        </section>
+
+        <section>
+          <h1>An optics problem?</h1>
+          <blockquote class="fragment">
+            <q>Object.freeze() is still quite slow.</q>
+            <footer>
+              <cite><a href="https://twitter.com/leeb/status/918631051513049088">@leeb (Lee Byron), Immutable.js author</a></cite>
+            </footer>
+          </blockquote>
+          <blockquote class="fragment">
+            <p>negative performance implications with Object.freeze</p>
+            <footer>
+              <cite><a href="https://www.reddit.com/r/javascript/comments/1up9rq/objectfreeze/cekfkfi/">reddit user on thread about Object.freeze</a></cite>
+            </footer>
+          </blockquote>
+          <aside class="notes">
+            But Object.freeze and seal suffer from optics problems. Some (incorrectly or not) believe them to be slow and unweildy
+          </aside>
+        </section>
+
+        <section>
+          <h2>The dreaded jsperf test <small>(much 💕 <a href="https://twitter.com/mathias">@mathias</a>)</small></h2>
+          <a href="https://jsperf.com/object-freeze/1" class="image"><img alt="A jsperf comparing Object.freeze with plain objects. Object.freeze is 100% slower!" src="./fig5.png"/></a> 
+          <aside class="notes">
+            Here we can see a classic problem with microbenchmarking. This is a completely false test, but it's enough for some to forever condemn Object.freeze for some users.
+            This is a false test because it's trying to assign to a frozen object, which of course is a strict-mode-error.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Oh wait no...</h2>
+          <a href="https://jsperf.com/object-freeze/3" class="image"><img alt="A jsperf comparing Object.freeze with plain objects. Roughly the same speed." src="./fig6.png"/></a> 
+          <aside class="notes">
+            Here's an actual test. As you can see they're pretty much the same speed. Surprise surprise.
+          </aside>
+        </section>
+
+        <section>
+          <blockquote>
+            <h2>The amount of energy necessary to refute bullshit is an order of magnitude bigger than to produce it.</h2>
+            <cite>Alberto Brandolini</cite>
+          </blockquote>
+          <aside class="notes">
+            This quote pretty much sums up my feelings here
+          </aside>
+        </section>
+
+        <section>
+          <h2>Is this an ergonomics problem?</h2>
+          <div style="display: flex">
+            <pre style="width: 50%; margin-right: 1em">
+              <code class="hljs javascript">
+  const foo = {
+    a: {
+      b: {
+        c: {
+          d: {
+            e: "some string!"
+          }
+        }
+      }
+    }
+  }
+              </code>
+            </pre>
+            <pre class="fragment" style="width: 50%; margin-left: 1em">
+              <code class="hljs javascript">
+  const foo = Object.freeze({
+    a: Object.freeze({
+      b: Object.freeze({
+        c: Object.freeze({
+          d: Object.freeze({
+            e: "some string!"
+          })
+        })
+      })
+    })
+  })
+              </code>
+            </pre>
+          </div>
+          <aside class="notes">
+            There's also a true ergonomics problem with Object.freeze, it's a mouthful to say and more to ttype. On deeply nested Objects it adds so much noise it's very hard to see the real intent here.
+          </aside>
+        </section>
+
+        <section>
+          <a href="https://twitter.com/Keithamus/status/926107133883555840" class="image"><img alt="A twitter poll asking why people don't use Object.freeze/seal. Results: 39% too much typing, 13% they are slow, 4% I use Immutable/some other lib, 44% other" src="./fig7.png"/></a> 
+          <aside class="notes">
+            Super scientific research warning. Here's a twitter poll. It had a couple dozen votes, but the sentiment was that people felt there was too much typing, or for other reasons, such as being unaware of them,
+            or just not feeling the need for immutability.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Conclusion</h2>
+          <ul>
+            <li>Some aren't aware of them</li>
+            <li>Some won't use them for too much typing</li>
+            <li>Some believe they are slow</li>
+          </ul>
+          <aside class="notes">
+            So ultimately Object.freeze and seal get bad wraps for being slow, verbose, and generally obscure methods in JS. But they're _really really useful_!
+            So just like any really useful feature in JS, we can lift the pattern more into the mainstream...
+          </aside>
+        </section>
+
+        <section>
+          <h2>So let's make them a syntax feature</h2>
+          <ul>
+            <li>Send a signal to developers that this is a key feature</li>
+            <li>Solve the problem of verbosity</li>
+            <li>Shift the conversation from "being too slow"</li>
+          </ul>
+          <aside class="notes">
+            By making a syntax over Object.freeze, we can signal to developers that this is a real feature of JS, we can change the conversation about speed, and we solve the verbosity problem.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Object.freeze ==> {##}</h2>
+          <div style="display: flex">
+            <pre style="width: 50%; margin-right: 1em">
+              <code class="hljs javascript">
+  const foo = Object.freeze({
+    a: Object.freeze({
+      b: Object.freeze({
+        c: Object.freeze({
+          d: Object.freeze({
+            e: Object.freeze([ "some string!" ])
+          })
+        })
+      })
+    })
+  })
+              </code>
+            </pre>
+            <pre style="width: 50%; margin-left: 1em">
+              <code class="hljs javascript">
+  const foo = {#
+    a: {#
+      b: {#
+        c: {#
+          d: {#
+            e: [# "some string!" #]
+          #}
+        #}
+      #}
+    #}
+  #}
+              </code>
+            </pre>
+          </div>
+          <aside class="notes">
+            I propose, for Object.freeze, we add a syntax that adds hashes around the curly braces to tell the interpreter that this is a frozen object.
+            Hashes on both ends of the curlies allows users to quickly see where a frozen object starts and begins. The downside is that this inherits the
+            parenthesis matching problems - but this is an early syntax error and something linters already highlight so I feel its a worthwhile tradeoff.
+            Of course Arrays and Objects can both be frozen, and so this syntax works for both.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Object.seal ==> {||}</h2>
+          <div style="display: flex">
+            <pre style="width: 50%; margin-right: 1em">
+              <code class="hljs javascript">
+  const foo = Object.seal({
+    a: Object.seal({
+      b: Object.seal({
+        c: Object.seal({
+          d: Object.seal({
+            e: Object.seal(["some string!"])
+          })
+        })
+      })
+    })
+  })
+              </code>
+            </pre>
+            <pre style="width: 50%; margin-left: 1em">
+              <code class="hljs javascript">
+  const foo = {|
+    a: {|
+      b: {|
+        c: {|
+          d: {|
+            e: [| "some string!" |]
+          |}
+        |}
+      |}
+    |}
+  |}
+              </code>
+            </pre>
+          </div>
+          <aside class="notes">
+            For sealed objects, I propose we offer the same mechanism, but using the pipe character instead. Now Flow already sets a precedent for this;
+            Flow has a concept of "exact object types" which allows someone to type an object that essentially cannot have any more properties than those
+            specified - for which the syntax is identical.
+          </aside>
+        </section>
+
+        <section>
+          <h2>But wait, there's more!</h2>
+          <small>(Silently failing typos in options bags)</small>
+          <div>
+            <pre>
+              <code class="hljs javascript">
+  function ajax({ url, headers, onSuccess }) {
+    fetch(url, { headers }).then(onSuccess)
+  }
+  ajax({ 'http://example.com', onsuccess: console.log })
+  // No log :(, no errors </code>
+            </pre>
+            <pre class="fragment">
+              <code class="hljs javascript">
+  function ajax({| url, headers, onSuccess |}) {
+    fetch(url, { headers }).then(onSuccess)
+  }
+  ajax({ 'http://example.com', onsuccess: console.log })
+  // throws TypeError:
+  // `'cannot define property `onsuccess`. Object is not extensible'` </code>
+            </pre>
+          </div>
+          <aside class="notes">
+            The nice thing about having this syntax, is we can lift it into other important areas. Can anyone tell what is wrong with this code?
+            There's a typo - the `onsuccess` method being passed in has a lower case `s` when it should be an uppercase `S`. This is an incredibly
+            common problem, tricky to spot and hard to lint for - this class of problem is generally only solved by adding tooling such as Flow or
+            TypeScript, or relying on code completion features.<br/><br/>We can add the sealed object syntax to the function destructuring though!
+            Now this function can throw an error when it receives an argument that isn't part of the destructured property list. Once someone learns
+            the new seal syntax, using it for destructuring is a completely intuitive step. This is huge.
+          </aside>
+        </section>
+
+        <section>
+          <h2>But wait, there's more!</h2>
+          <small>(Object destructuring with immutable bindings)</small>
+          <div>
+            <pre>
+              <code class="hljs javascript">
+  function ajax({ url, headers, onSuccess }) {
+    // We can redfine `url` because its a mutable binding
+    url = new URL(url)
+    fetch(url, { headers }).then(onSuccess)
+  } </code>
+            </pre>
+            <pre class="fragment">
+              <code class="hljs javascript">
+  function ajax({# url, headers, onSuccess #}) {
+    // We cannot redfine `url` - it is now a `const` binding!
+    url = new URL(url)
+    fetch(url, { headers }).then(onSuccess)
+  }
+  // throws TypeError
+  // 'invalid assignment to const `url`'`</code>
+            </pre>
+          </div>
+          <aside class="notes">
+            In addition, there's some contention about function parameters having a mutable binding. If we lift the frozen object syntax into destructured
+            arguments, we can give users immutable bindings for their parameters. This adds important safety mechanisms for those who want it, and for those
+            who prefer the `const` syntax.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Maybe even more?</h2>
+          <small>(Sealed function param bindings)</small>
+          <div>
+            <pre>
+              <code class="hljs javascript">
+  function add(a, b) {
+    return a + b
+  }
+  add(2, 2, 2) === 6 // ? Get back 4?!</code>
+            </pre>
+            <pre class="fragment">
+              <code class="hljs javascript">
+  function add(| a, b |) {
+    return a + b
+  }
+  add(2, 2, 2) === 6
+  // throws TypeError
+  // 'invalid third parameter, expected 2`</code>
+            </pre>
+          </div>
+          <aside class="notes">
+            To take this concept a little further, we could also offer the same synax around function arguments. Adding the pipes around
+            a functions parens seals that function so that it throws an error if fed more arguments than its length. Here we can feed 3 arguments
+            to this function which has an arity of 2, and if we seal that arity, we get a typerror. Again, this fixes a whole class of errors that
+            only type checkers can currently highlight to developers.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Maybe even more?</h2>
+          <small>(Sealed or Frozen function param bindings)</small>
+          <div>
+            <pre>
+              <code class="hljs javascript">
+  function add1(a) {
+    a += 1
+    return a
+  }
+  add(1) === 2</code>
+            </pre>
+            <pre class="fragment">
+              <code class="hljs javascript">
+  function add1(# a #) {
+    a += 1 // throws TypeError `invalid assignment...`
+    return a
+  }
+  add1(1) === 2</code>
+            </pre>
+          </div>
+          <aside class="notes">
+           And again we can draw out the frozen syntax to function parens, creating immutable bindings for these arguments.
+           Treating function params as immutable is a popular enough pattern that eslint has a rule for this: no-param-reassign
+         </aside>
+        </section>
+
+        <section>
+          <h2>Maybe even more?</h2>
+          <small>(Extending syntax to general destructing for better type safety)</small>
+          <div>
+            <pre>
+              <code class="hljs javascript">
+const foo = { a: 1, b: 2 }
+const {a, b, c} = foo
+// Silently sets `c` to undefined :(</code>
+            </pre>
+            <pre class="fragment">
+              <code class="hljs javascript">
+const foo = { a: 1, b: 2 }
+const {|a, b, c|} = foo
+// Throws TypeError 'invalid assignment to unknown property c'
+</code>
+            </pre>
+          </div>
+          <aside class="notes">
+            Perhaps, this syntax could even be applied to object destructuring. Although slightly less intuitive, a new problem occurs with object destructuring
+            in that you can sometimes accidentally try to draw out unknown properties from objects. In this case we've just initialized `c` as a `const` of `undefined`.
+            By adding sealed syntax to the destructuring we can make this statement cause an error, telling us what went wrong here.
+          </aside>
+        </section>
+
+        <section>
+          <h2>For-free patterns</h2>
+          <small>(Extending immutable objects)</small>
+          <div>
+            <pre>
+              <code class="hljs javascript">
+  const foo = Object.freeze({ a: 1 })
+  const bar = Object.freeze(Object.assign({}, foo, { a: 2 }))
+              </code>
+            </pre>
+            <pre>
+              <code class="hljs javascript">
+  const foo = {# a: 1 #}
+  const bar = {# ...foo, a: 2 #}
+              </code>
+            </pre>
+          </div>
+          <aside class="notes">
+            Speaking of destructuring, we get some useful patterns for free here. Coupled with Object spread, creating a superset of a frozen object becomes
+            a much more transparent operation. Again we go back to the ergonomics discussion. We can more clearly see what is happening here on the right, because
+            the function calls fade away into the backround with syntax, and the "points" - the identifiers - we're left with are the ones we care about.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Questions?</h2>
+          <aside class="notes">
+            That's all there is. Any questions?
+          </aside>
+        </section>
+
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
