@@ -396,12 +396,6 @@ const {|a, b, c|} = foo
           <div>
             <pre>
               <code class="hljs javascript">
-  const foo = Object.freeze({ a: 1 })
-  const bar = Object.freeze(Object.assign({}, foo, { a: 2 }))
-              </code>
-            </pre>
-            <pre>
-              <code class="hljs javascript">
   hasJustBar = foo => match (foo) {
     {| bar |}: true,
     { bar }: false,
