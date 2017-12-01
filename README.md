@@ -4,7 +4,7 @@
 
 Object.freeze and Object.seal are both useful functions, but they aren't particularly ergonomic to use, especially when dealing with deeply nested objects or trying to do complex things like create a superset of a frozen object.
 
-In addition, it would be useful to have these syntaxes in other places. It'd be useful to seal a destructuring exrpession, or freeze function arguments to create immutable bindings.
+In addition, it would be useful to have these syntaxes in other places. It'd be useful to seal a destructuring expression, or freeze function arguments to create immutable bindings.
 
 ## Sketches
 
