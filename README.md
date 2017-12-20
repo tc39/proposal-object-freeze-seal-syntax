@@ -109,14 +109,7 @@ ajax({ url: 'http://example.com', onsuccess: console.log })
 
 ```js
 function ajax({# url, headers, onSuccess #}) {
-  const _ref2 = Object.seal({ url: undefined, headers: undefined, onSuccess: undefined }) // seal now, const later
-  Object.assign(_ref2, _ref1)
-  const url = _ref2.url
-  const headers = _ref2.headers
-  const onSuccess = _ref2.onSuccess
-
-  url = new URL(url)
-  // throws TypeError('cannot assign to const `url`')
+  url = new URL(url) // throws TypeError('cannot assign to const `url`')
   fetch(url, { headers }).then(onSuccess)
 }
 ajax({ url: 'http://example.com', onSuccess: console.log })
@@ -126,14 +119,13 @@ ajax({ url: 'http://example.com', onSuccess: console.log })
 
 ```js
 function ajax(_ref1) {
-  const _ref2 = Object.seal({ url: undefined, headers: undefined, onSuccess: undefined })
+  const _ref2 = Object.seal({ url: undefined, headers: undefined, onSuccess: undefined }) // seal now, const later
   Object.assign(_ref2, _ref1)
-  let url = _ref2.url
-  let headers = _ref2.headers
-  let onSuccess = _ref2.onSuccess
+  const url = _ref2.url
+  const headers = _ref2.headers
+  const onSuccess = _ref2.onSuccess
 
-  url = new URL(url)
-  // throws TypeError('cannot assign to const `url`')
+  url = new URL(url) // throws TypeError('cannot assign to const `url`')
   fetch(url, { headers }).then(onSuccess)
 }
 ajax({ url: 'http://example.com', onSuccess: console.log })
