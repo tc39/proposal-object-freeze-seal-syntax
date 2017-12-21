@@ -77,7 +77,7 @@ const foo = Object.seal({
 </details>
 
 
-### Sealing an functions destructured options bag
+### Sealing a functions destructured options bag
 
 ```js
 function ajax({| url, headers, onSuccess |}) {
@@ -105,7 +105,7 @@ ajax({ url: 'http://example.com', onsuccess: console.log })
 
 </details>
 
-### Freezing an functions destructured options bag
+### Freezing a functions destructured options bag
 
 ```js
 function ajax({# url, headers, onSuccess #}) {
