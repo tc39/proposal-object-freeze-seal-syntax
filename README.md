@@ -158,8 +158,8 @@ function add(_1, _2) {
 
   return a + b
 }
-ajax({ 'http://example.com', onsuccess: console.log })
-// throws TypeError('cannot define property `onsuccess`. Object is not extensible')
+add(2, 2, 2) === 6
+// throws TypeError('invalid third parameter, expected 2`)
 ```
 
 </details>
@@ -186,8 +186,7 @@ function add1(_1) {
   a += 1 // throws TypeError `invalid assignment...`
   return a
 }
-ajax({ 'http://example.com', onsuccess: console.log })
-// throws TypeError('cannot define property `onsuccess`. Object is not extensible')
+add1(1) === 2
 ```
 
 </details>
