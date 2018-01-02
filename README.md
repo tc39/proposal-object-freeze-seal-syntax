@@ -3,6 +3,33 @@
 ## Rationale
 
 Object.freeze and Object.seal are both useful functions, but they aren't particularly ergonomic to use, especially when dealing with deeply nested objects or trying to do complex things like create a superset of a frozen object.
+Also even frozen objects can be modified via their prototype chain:
+
+```js
+> const x = Object.freeze({});
+undefined
+> x.foo
+undefined
+> Object.prototype.foo = 3;
+3
+> x.foo
+3
+```
+
+To prevent this you can use `Object.freeze({ __proto__: null })` or
+`Object.freeze(Object.assign(Object.create(null), {}))` to ensure that frozen
+objects cannot be modified via their prototype chain.
+
+```js
+> const x = Object.freeze({ __proto__: null });
+undefined
+> x.foo
+undefined
+> Object.prototype.foo = 3;
+3
+> x.foo
+undefined
+```
 
 In addition, it would be useful to have these syntaxes in other places. It'd be useful to seal a destructuring expression, or freeze function arguments to create immutable bindings.
 
@@ -28,10 +55,15 @@ const foo = {#
 
 ```js
 const foo = Object.freeze({
+  __proto__: null,
   a: Object.freeze({
+    __proto__: null,
     b: Object.freeze({
+      __proto__: null,
       c: Object.freeze({
+        __proto__: null,
         d: Object.freeze({
+          __proto__: null,
           e: Object.freeze([ "some string!" ])
         })
       })
@@ -62,10 +94,15 @@ const foo = {|
 
 ```js
 const foo = Object.seal({
+  __proto__: null,
   a: Object.seal({
+    __proto__: null,
     b: Object.seal({
+      __proto__: null,
       c: Object.seal({
+        __proto__: null,
         d: Object.seal({
+          __proto__: null,
           e: Object.seal(["some string!"])
         })
       })
