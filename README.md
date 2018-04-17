@@ -240,9 +240,9 @@ const {| a, b, c |} = foo
 
 ```js
 const foo = { a: 1, b: 2 }
-if (!('a' in foo)) throw new TypeError('invalid assignment to unknown property c')
+if (!('a' in foo)) throw new TypeError('invalid assignment to unknown property a')
 const a = foo.a
-if (!('b' in foo)) throw new TypeError('invalid assignment to unknown property c')
+if (!('b' in foo)) throw new TypeError('invalid assignment to unknown property b')
 const b = foo.b
 if (!('c' in foo)) throw new TypeError('invalid assignment to unknown property c')
 const c = foo.c
